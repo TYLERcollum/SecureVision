@@ -6,6 +6,7 @@ import LoginButton from "../components/login/LoginButton";
 import CreateAccountButton from "../components/login/CreateAccountButton";
 import GoogleSignInButton from "../components/login/GoogleSignInButton";
 import ForgotPasswordButton from "../components/login/ForgotPasswordButton";
+import PaywallScreen from "./PaywallScreen";
 import { auth } from "../firebase";
 import { createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 
@@ -24,6 +25,7 @@ export default function LoginScreen() {
   const [verificationMessage, setVerificationMessage] = useState("");
   const [signupError, setSignupError] = useState("");
   const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -34,7 +36,7 @@ export default function LoginScreen() {
           alert("Please verify your email before logging in. Check your inbox.");
           // Optionally, sign out the user
         } else {
-          alert("Login successful!");
+          setShowPaywall(true);
           // TODO: Redirect or show main app
         }
       })
@@ -85,6 +87,10 @@ export default function LoginScreen() {
         }
       });
   };
+
+  if (showPaywall) {
+    return <PaywallScreen onPlanSelect={(plan) => alert(`Selected: ${plan}`)} />;
+  }
 
   return (
     <div style={{
