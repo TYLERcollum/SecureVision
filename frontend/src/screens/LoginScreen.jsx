@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import EmailInput from "../components/login/EmailInput";
 import PasswordInput from "../components/login/PasswordInput";
+import ConfirmPasswordInput from "../components/login/ConfirmPasswordInput";
 import LoginButton from "../components/login/LoginButton";
 import CreateAccountButton from "../components/login/CreateAccountButton";
 import GoogleSignInButton from "../components/login/GoogleSignInButton";
@@ -15,6 +16,8 @@ const handleGoogleSignIn = () => {
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isCreateMode, setIsCreateMode] = useState(false);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -27,9 +30,14 @@ export default function LoginScreen() {
     alert("Forgot password clicked");
   };
 
-  const handleCreateAccount = () => {
+  const handleCreateAccount = (e) => {
+    if (!isCreateMode) {
+      setIsCreateMode(true);
+      return;
+    }
+    e.preventDefault();
     // TODO: Add create account logic
-    alert("Create account clicked");
+    alert(`Create account with ${email}, password: ${password}, confirm: ${confirmPassword}`);
   };
 
   return (
@@ -64,23 +72,36 @@ export default function LoginScreen() {
             􁜉
           </span>
         </div>
-        <h2 style={{ margin: 0, marginBottom: 8 }}>Sign in with email</h2>
-        <div style={{ color: "#888", marginBottom: 28, fontSize: 15, textAlign: "center" }}>
-          Make a new doc to bring your words, data, and teams together. For free
-        </div>
-        <form onSubmit={handleLogin} style={{ width: "100%" }}>
+        <h2 style={{ margin: 0, marginBottom: 24 }}>
+          {isCreateMode ? "Create account with email" : "Sign in with email"}
+        </h2>
+        <form onSubmit={isCreateMode ? handleCreateAccount : handleLogin} style={{ width: "100%" }}>
           <EmailInput value={email} onChange={e => setEmail(e.target.value)} />
           <PasswordInput value={password} onChange={e => setPassword(e.target.value)} />
-          <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
-            <ForgotPasswordButton onClick={handleForgotPassword} />
-          </div>
-          <LoginButton />
+          {isCreateMode && (
+            <ConfirmPasswordInput value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+          )}
+          {!isCreateMode && (
+            <>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
+                <ForgotPasswordButton onClick={handleForgotPassword} />
+              </div>
+              <LoginButton />
+            </>
+          )}
+          {isCreateMode && (
+            <CreateAccountButton onClick={handleCreateAccount} />
+          )}
         </form>
-        <CreateAccountButton onClick={handleCreateAccount} />
-        <div style={{ width: "100%", textAlign: "center", margin: "12px 0 10px 0", color: "#bbb" }}>
-          Or sign in with
-        </div>
-        <GoogleSignInButton onClick={handleGoogleSignIn} />
+        {!isCreateMode && (
+          <>
+            <CreateAccountButton onClick={handleCreateAccount} />
+            <div style={{ width: "100%", textAlign: "center", margin: "12px 0 10px 0", color: "#bbb" }}>
+              Or sign in with
+            </div>
+            <GoogleSignInButton onClick={handleGoogleSignIn} />
+          </>
+        )}
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export default function LoginButton({ onClick }) {
       }}
       onClick={onClick}
     >
-      Get Started
+      Login
     </button>
   );
 }
