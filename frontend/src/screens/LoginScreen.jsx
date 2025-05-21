@@ -20,6 +20,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isCreateMode, setIsCreateMode] = useState(false);
+  const [showVerifyPrompt, setShowVerifyPrompt] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -59,8 +61,8 @@ export default function LoginScreen() {
       .then((userCredential) => {
         sendEmailVerification(userCredential.user)
           .then(() => {
-            alert("Verification email sent! Please check your inbox.");
-            // Optionally, sign out or block login until verified
+            setShowVerifyPrompt(true);
+            setVerificationMessage("");
           });
       })
       .catch((error) => {
@@ -100,34 +102,85 @@ export default function LoginScreen() {
             􁜉
           </span>
         </div>
-        <h2 style={{ margin: 0, marginBottom: 24 }}>
-          {isCreateMode ? "Create account with email" : "Sign in with email"}
-        </h2>
-        <form onSubmit={isCreateMode ? handleCreateAccount : handleLogin} style={{ width: "100%" }}>
-          <EmailInput value={email} onChange={e => setEmail(e.target.value)} />
-          <PasswordInput value={password} onChange={e => setPassword(e.target.value)} />
-          {isCreateMode && (
-            <ConfirmPasswordInput value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
-          )}
-          {!isCreateMode && (
-            <>
-              <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
-                <ForgotPasswordButton onClick={handleForgotPassword} />
-              </div>
-              <LoginButton />
-            </>
-          )}
-          {isCreateMode && (
-            <CreateAccountButton onClick={handleCreateAccount} />
-          )}
-        </form>
-        {!isCreateMode && (
+        {showVerifyPrompt ? (
           <>
-            <CreateAccountButton onClick={handleCreateAccount} />
-            <div style={{ width: "100%", textAlign: "center", margin: "12px 0 10px 0", color: "#bbb" }}>
-              Or sign in with
+            <h2 style={{ margin: 0, marginBottom: 20 }}>Verify your email</h2>
+            <div style={{ color: "#888", marginBottom: 24, fontSize: 15, textAlign: "center" }}>
+              Please check your inbox and verify your email before logging in.
             </div>
-            <GoogleSignInButton onClick={handleGoogleSignIn} />
+            <button
+              style={{
+                width: "100%",
+                background: "#3498fd",
+                color: "#fff",
+                fontWeight: 600,
+                border: "none",
+                borderRadius: 8,
+                padding: "12px 0",
+                fontSize: 16,
+                marginBottom: 12,
+                cursor: "pointer",
+                boxShadow: "0 2px 8px rgba(52,152,253,0.10)",
+              }}
+              onClick={async () => {
+                if (auth.currentUser) {
+                  await auth.currentUser.reload();
+                  if (auth.currentUser.emailVerified) {
+                    setVerificationMessage("Account created successfully!");
+                    setTimeout(() => {
+                      setShowVerifyPrompt(false);
+                      setIsCreateMode(false);
+                      setEmail("");
+                      setPassword("");
+                      setConfirmPassword("");
+                      setVerificationMessage("");
+                    }, 2000);
+                  } else {
+                    setVerificationMessage("Still not verified. Please check your inbox.");
+                  }
+                }
+              }}
+            >
+              I've Verified My Email
+            </button>
+            {verificationMessage && (
+              <div style={{ color: verificationMessage.includes("successfully") ? "green" : "#e74c3c", marginTop: 10, textAlign: "center" }}>
+                {verificationMessage}
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <h2 style={{ margin: 0, marginBottom: 24 }}>
+              {isCreateMode ? "Create account with email" : "Sign in with email"}
+            </h2>
+            <form onSubmit={isCreateMode ? handleCreateAccount : handleLogin} style={{ width: "100%" }}>
+              <EmailInput value={email} onChange={e => setEmail(e.target.value)} />
+              <PasswordInput value={password} onChange={e => setPassword(e.target.value)} />
+              {isCreateMode && (
+                <ConfirmPasswordInput value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} />
+              )}
+              {!isCreateMode && (
+                <>
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
+                    <ForgotPasswordButton onClick={handleForgotPassword} />
+                  </div>
+                  <LoginButton />
+                </>
+              )}
+              {isCreateMode && (
+                <CreateAccountButton onClick={handleCreateAccount} />
+              )}
+            </form>
+            {!isCreateMode && (
+              <>
+                <CreateAccountButton onClick={handleCreateAccount} />
+                <div style={{ width: "100%", textAlign: "center", margin: "12px 0 10px 0", color: "#bbb" }}>
+                  Or sign in with
+                </div>
+                <GoogleSignInButton onClick={handleGoogleSignIn} />
+              </>
+            )}
           </>
         )}
       </div>
