@@ -22,6 +22,7 @@ export default function LoginScreen() {
   const [isCreateMode, setIsCreateMode] = useState(false);
   const [showVerifyPrompt, setShowVerifyPrompt] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState("");
+  const [signupError, setSignupError] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -59,6 +60,7 @@ export default function LoginScreen() {
     // Firebase signup and send verification email
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential) => {
+        setSignupError("");
         sendEmailVerification(userCredential.user)
           .then(() => {
             setShowVerifyPrompt(true);
@@ -66,7 +68,11 @@ export default function LoginScreen() {
           });
       })
       .catch((error) => {
-        alert(error.message);
+        if (error.code === "auth/email-already-in-use") {
+          setSignupError("An account with this email already exists. Would you like to log in instead?");
+        } else {
+          alert(error.message);
+        }
       });
   };
 
@@ -154,6 +160,43 @@ export default function LoginScreen() {
             <h2 style={{ margin: 0, marginBottom: 24 }}>
               {isCreateMode ? "Create account with email" : "Sign in with email"}
             </h2>
+            {isCreateMode && signupError && (
+              <div style={{
+                background: "#fff8e1",
+                color: "#b26a00",
+                border: "1px solid #ffe082",
+                borderRadius: 8,
+                padding: "14px 16px",
+                marginBottom: 16,
+                fontSize: 15,
+                textAlign: "center"
+              }}>
+                {signupError}
+                <div style={{ marginTop: 10 }}>
+                  <button
+                    style={{
+                      background: "#3498fd",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "8px 18px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      fontSize: 15
+                    }}
+                    onClick={() => {
+                      setIsCreateMode(false);
+                      setSignupError("");
+                      setEmail("");
+                      setPassword("");
+                      setConfirmPassword("");
+                    }}
+                  >
+                    Back to Login
+                  </button>
+                </div>
+              </div>
+            )}
             <form onSubmit={isCreateMode ? handleCreateAccount : handleLogin} style={{ width: "100%" }}>
               <EmailInput value={email} onChange={e => setEmail(e.target.value)} />
               <PasswordInput value={password} onChange={e => setPassword(e.target.value)} />
