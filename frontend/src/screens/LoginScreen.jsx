@@ -7,7 +7,7 @@ import CreateAccountButton from "../components/login/CreateAccountButton";
 import GoogleSignInButton from "../components/login/GoogleSignInButton";
 import ForgotPasswordButton from "../components/login/ForgotPasswordButton";
 import { auth } from "../firebase";
-import { createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 
 // Placeholder for Google sign-in handler
 const handleGoogleSignIn = () => {
@@ -23,6 +23,7 @@ export default function LoginScreen() {
   const [showVerifyPrompt, setShowVerifyPrompt] = useState(false);
   const [verificationMessage, setVerificationMessage] = useState("");
   const [signupError, setSignupError] = useState("");
+  const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -43,8 +44,17 @@ export default function LoginScreen() {
   };
 
   const handleForgotPassword = () => {
-    // TODO: Add forgot password logic
-    alert("Forgot password clicked");
+    setForgotPasswordMessage("");
+    if (!email) {
+      setForgotPasswordMessage("Please enter your email address to reset your password.");
+      return;
+    }
+    try {
+      sendPasswordResetEmail(auth, email);
+      setForgotPasswordMessage("If an account exists for this email, a password reset link has been sent. Please check your inbox.");
+    } catch (error) {
+      setForgotPasswordMessage("If an account exists for this email, a password reset link has been sent. Please check your inbox.");
+    }
   };
 
   const handleCreateAccount = (e) => {
@@ -208,6 +218,20 @@ export default function LoginScreen() {
                   <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 20 }}>
                     <ForgotPasswordButton onClick={handleForgotPassword} />
                   </div>
+                  {forgotPasswordMessage && (
+                    <div style={{
+                      background: "#e3f2fd",
+                      color: "#1565c0",
+                      border: "1px solid #90caf9",
+                      borderRadius: 8,
+                      padding: "10px 14px",
+                      marginBottom: 16,
+                      fontSize: 15,
+                      textAlign: "center"
+                    }}>
+                      {forgotPasswordMessage}
+                    </div>
+                  )}
                   <LoginButton />
                 </>
               )}
@@ -230,4 +254,3 @@ export default function LoginScreen() {
     </div>
   );
 }
-
