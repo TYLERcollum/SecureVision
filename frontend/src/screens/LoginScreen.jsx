@@ -6,6 +6,8 @@ import LoginButton from "../components/login/LoginButton";
 import CreateAccountButton from "../components/login/CreateAccountButton";
 import GoogleSignInButton from "../components/login/GoogleSignInButton";
 import ForgotPasswordButton from "../components/login/ForgotPasswordButton";
+import { auth } from "../firebase";
+import { createUserWithEmailAndPassword, sendEmailVerification, signInWithEmailAndPassword } from "firebase/auth";
 
 // Placeholder for Google sign-in handler
 const handleGoogleSignIn = () => {
@@ -21,8 +23,20 @@ export default function LoginScreen() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    // TODO: Add login logic
-    alert(`Login with ${email}`);
+    // Firebase login with email verification check
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        if (!userCredential.user.emailVerified) {
+          alert("Please verify your email before logging in. Check your inbox.");
+          // Optionally, sign out the user
+        } else {
+          alert("Login successful!");
+          // TODO: Redirect or show main app
+        }
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
   };
 
   const handleForgotPassword = () => {
@@ -36,8 +50,22 @@ export default function LoginScreen() {
       return;
     }
     e.preventDefault();
-    // TODO: Add create account logic
-    alert(`Create account with ${email}, password: ${password}, confirm: ${confirmPassword}`);
+    if (password !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+    // Firebase signup and send verification email
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        sendEmailVerification(userCredential.user)
+          .then(() => {
+            alert("Verification email sent! Please check your inbox.");
+            // Optionally, sign out or block login until verified
+          });
+      })
+      .catch((error) => {
+        alert(error.message);
+      });
   };
 
   return (
